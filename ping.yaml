@@ -1,0 +1,10 @@
+---
+- name: Ping yout VM
+  hosts: wireguard
+  gather_facts: false
+  become: yes
+  become_user: root
+    
+  tasks:
+    - name: Ping
+      ping:

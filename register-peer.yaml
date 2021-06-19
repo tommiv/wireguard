@@ -1,0 +1,18 @@
+---
+- name: Register a peer
+  hosts: wireguard
+  gather_facts: false
+  become: yes
+  become_user: root
+    
+  vars_prompt:
+    - name: public_key
+      prompt: Client public key, see readme.md
+
+    - name: client_ip
+      prompt: Client IP, must be the same as in the tunnel file
+
+  tasks:
+    - name: Register
+      shell:
+        cmd: "wg set wg0 peer {{ public_key }} allowed-ips {{client_ip}}"

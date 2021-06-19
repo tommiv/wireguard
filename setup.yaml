@@ -1,0 +1,68 @@
+---
+- name: Setup Wireguard
+  hosts: wireguard
+  gather_facts: false
+  become: yes
+  become_user: root
+    
+  tasks:
+    - name: Update APT cache
+      apt:
+        update_cache: yes
+
+    - name: Install the module
+      apt:
+        name: wireguard
+        state: present
+
+    - name: Generate the server keypair
+      shell:
+        cmd: "wg genkey | tee /etc/wireguard/privatekey | wg pubkey | tee /etc/wireguard/publickey"
+
+    - name: Secure the private key
+      file: dest=/etc/wireguard/privatekey mode=600
+
+    - name: Read the private key
+      shell:
+        cmd: "cat /etc/wireguard/privatekey"
+      register: private_key_res
+
+    - set_fact:
+        private_key={{ private_key_res.stdout }}
+
+    - name: Get the public network interface name
+      shell:
+        cmd: "ip -o -4 route show to default | awk '{print $5}'"
+      register: network_interface_res
+
+    - set_fact:
+        network_interface={{ network_interface_res.stdout }}
+
+    - name: Render wg0 descriptor
+      template:
+        src: "templates/wg0.conf.j2"
+        dest: "/etc/wireguard/wg0.conf"
+        mode: 0600
+
+    - name: Up interface
+      shell: "wg-quick up wg0"
+
+    - name: Check it's up and running
+      shell: "wg show wg0"
+      register: wg_wg0_state
+    
+    - debug: 
+        var: wg_wg0_state.stdout_lines
+
+    - name: Enabling systemd unit
+      shell: "sudo systemctl enable wg-quick@wg0"
+
+    - name: Enable IP forwarding – edit config
+      lineinfile:
+        path: "/etc/sysctl.conf"
+        regexp: "#?\\s*net.ipv4.ip_forward="
+        line: "net.ipv4.ip_forward=1"
+
+    - name: Enable IP forwarding – reload config
+      shell:
+        cmd: "sysctl -p"

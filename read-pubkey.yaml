@@ -1,0 +1,14 @@
+---
+- name: Read pubkey
+  hosts: wireguard
+  gather_facts: false
+  become: yes
+  become_user: root
+    
+  tasks:
+    - name: Read the file
+      shell: "cat /etc/wireguard/publickey"
+      register: pubkey
+    
+    - debug: 
+        var: pubkey.stdout
