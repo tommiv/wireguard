@@ -13,10 +13,10 @@ You need anything that can run Ansible – Mac OS, any Linux, Windows + WSL2, an
 You need a VPS from your favourite provider. I'll use Hetzner.
 
 Some tips: 
-– I suggest to select the closest datacenter to your location, in my case it's Finland, Helsinki
-– Don't forget to add your SSH key during the creation process, just paste the key in the web interface
-– Select Ubuntu 20 as VM OS
-– Either configure your VM to allow root SSH connection (not so secure but generally ok for our purposes; default option in Hetzner, but not a thing in Digital Ocean) or create a new user and allow him to login with SSH and do `sudo` without a password (more secure but requires additional steps, see [here](https://thucnc.medium.com/how-to-create-a-sudo-user-on-ubuntu-and-allow-ssh-login-20e28065d9ff))
+- I suggest to select the closest datacenter to your location, in my case it's Finland, Helsinki
+- Don't forget to add your SSH key during the creation process, just paste the key in the web interface
+- Select Ubuntu 20 as VM OS
+- Either configure your VM to allow root SSH connection (not so secure but generally ok for our purposes; default option in Hetzner, but not a thing in Digital Ocean) or create a new user and allow him to login with SSH and do `sudo` without a password (more secure but requires additional steps, see [here](https://thucnc.medium.com/how-to-create-a-sudo-user-on-ubuntu-and-allow-ssh-login-20e28065d9ff))
 
 ## Ansible config
 
@@ -95,7 +95,6 @@ Where:
 
 
 4. Register the peer on the VM
-
 Run `ansible-playbook register-peer.yaml` and answer the questions. 
 For public key, paste the key that you or the app generated. **Don't mix up private and public keys, you need a public one**
 For client ip paste the IP you've provided in the tunnel file (`10.0.0.2` in our case)
