@@ -20,9 +20,29 @@ Some tips:
 
 ## Ansible config
 
-1. Rename `_inventory/inventory.example.yaml` to `_inventory/inventory.yaml`. Open it in your editor of choice and replace `127.0.0.1` with the real IP of your VM.
+1. Create `_inventory/inventory.yaml`. Put as many servers as you need in form of:
 
-2. Rename `_inventory/ssh.example.yaml` to `_inventory/ssh.yaml`. Open it in your editor of choice and replace `root` with your SSH user if needed. Replace the path to your SSH private key if needed. If you use your default SSH keypair and decided to allow root to login, there's nothing you need to edit here, just leave the rename file as is.
+```yaml
+wireguard:
+  hosts:
+    helsinki:
+      ansible_host: 127.0.0.1
+    moscow:
+      ansible_host: 127.0.0.1
+```
+
+Don't forget to replace names and IPs with your real ones
+
+2. Create `_inventory/ssh.yaml` in form of:
+
+```yaml
+all:
+  vars:
+    ansible_user: root
+    ansible_ssh_private_key_file: "~/.ssh/id_rsa"
+```
+
+Don't forget to replace `root` with your SSH user if needed. Don't forget to replace the path to your SSH private key if needed. If you use your default SSH keypair and decided to allow root to login, there's nothing you need to edit here, just leave the created file as is.
 
 3. Run `ansible-playbook ping.yaml`. You should see something like this in the last line:
 
