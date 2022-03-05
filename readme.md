@@ -87,11 +87,14 @@ AllowedIPs = 0.0.0.0/0
 ```
 
 Where:
-– `PrivateKey` – is the content of the file `/etc/wireguard/privatekey` on the CLIENT machine, **filled automatically in GUI**
+
+- `PrivateKey` – is the content of the file `/etc/wireguard/privatekey` on the CLIENT machine, **filled automatically in GUI**
 - `Address` – should be unique for every client, that's a bummer it can't be dynamic
-– `PublicKey` – the content of the file `/etc/wireguard/publickey` on the VM. To read it, run `ansible-playbook read-pubkey.yaml`
-– `Endpoint` – is the IP of your VM
+- `PublicKey` – the content of the file `/etc/wireguard/publickey` on the VM. To read it, run `ansible-playbook read-pubkey.yaml`
+- `Endpoint` – is the IP of your VM
 - `AllowedIPs` – this list can be used for split tunneling, if you want to have access to your LAN or corporate VPN
+
+You can generate a QR-code for mobile [here](https://www.wireguardconfig.com/qrcode).
 
 
 4. Register the peer on the VM
