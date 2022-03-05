@@ -4,15 +4,78 @@
   gather_facts: false
   become: yes
   become_user: root
+
+  vars_files:
+    - _options.yaml
     
   vars_prompt:
-    - name: public_key
-      prompt: Client public key, see readme.md
-
-    - name: client_ip
-      prompt: Client IP, must be the same as in the tunnel file
+    - name: peer_id
+      prompt: "peer_id: alphanumeric, underscores, hyphens"
 
   tasks:
-    - name: Register
+    # Note: this solution is fragile: it doesn't support mask wider than /24 and will blindly increment an octet out of bounds
+    - name: Find a free IP octet
       shell:
-        cmd: "wg set wg0 peer {{ public_key }} allowed-ips {{client_ip}}"
+        cmd: wg show | egrep -oh "{{ wg.ip_prefix }}.[0-9]+" | sort -t . -k 3,3n -k 4,4n | tail -n1| rev | cut -d '.' -f '1' | rev
+      register: next_ip_last_octet
+    
+    - name: Interpolating an IP
+      set_fact:
+        next_ip: "{{ wg.ip_prefix }}.{{ ([(next_ip_last_octet.stdout | int), 1] | max) + 1 }}/32"
+
+    - name: Generating keys
+      shell:
+        cmd: |
+          mkdir -p ./clients/{{ peer_id }}
+          cd ./clients/{{ peer_id }}
+          wg genkey > peer.key
+          wg pubkey < peer.key > peer.pub
+          wg genpsk > peer.psk
+        chdir: "/etc/wireguard"
+
+    - name: Read peer private key
+      shell: "cat /etc/wireguard/clients/{{ peer_id }}/peer.key"
+      register: privkey
+    
+    - name: Read peer preshared key
+      shell: "cat /etc/wireguard/clients/{{ peer_id }}/peer.psk"
+      register: pskkey
+
+    - name: Read peer public key
+      shell: "cat /etc/wireguard/clients/{{ peer_id }}/peer.pub"
+      register: pubkey
+
+    - name: Read server public key
+      shell: "cat /etc/wireguard/publickey"
+      register: server_pubkey
+
+    - name: Register peer
+      shell:
+        cmd: "wg set wg0 peer {{ pubkey.stdout }} preshared-key /etc/wireguard/clients/{{ peer_id }}/peer.psk allowed-ips {{ next_ip }}" 
+
+    - name: Render peer config
+      template:
+        src: "templates/peer.conf.j2"
+        dest: "/etc/wireguard/clients/{{ peer_id }}/peer.conf"
+        mode: 0600
+        force: true
+
+    - name: Download peer config
+      fetch:
+        src: "/etc/wireguard/clients/{{ peer_id }}/peer.conf"
+        dest: "./clients/{{ peer_id }}@{{ ansible_ssh_host }}.conf"
+        flat: true
+
+    - name: Generate QR-code from peer config
+      shell:
+        cmd: "qrencode -t png -o peer.png -r peer.conf"
+        chdir: /etc/wireguard/clients/{{ peer_id }}
+
+    - name: Download QR-code
+      fetch:
+        src: "/etc/wireguard/clients/{{ peer_id }}/peer.png"
+        dest: "./clients/{{ peer_id }}@{{ ansible_ssh_host }}.png"
+        flat: true
+
+    - debug: msg="You can find your config and QR-code in ./clients directory"
+

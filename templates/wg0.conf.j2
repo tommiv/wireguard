@@ -1,5 +1,5 @@
 [Interface]
-Address = {{ wg.ip_pool }}
+Address = {{ wg.ip_prefix }}.1/24
 SaveConfig = true
 ListenPort = {{ wg.port }}
 PrivateKey = {{ private_key }}

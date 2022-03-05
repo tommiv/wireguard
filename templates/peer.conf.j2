@@ -1,0 +1,10 @@
+[Interface]
+PrivateKey = {{ privkey.stdout }}
+Address = {{ next_ip }}
+DNS = {{ wg.dns }}
+
+[Peer]
+PublicKey = {{ server_pubkey.stdout }}
+PresharedKey = {{ pskkey.stdout }}
+AllowedIPs = 0.0.0.0/0
+Endpoint = {{ ansible_ssh_host }}:{{ wg.port }}

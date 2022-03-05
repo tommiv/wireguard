@@ -7,7 +7,6 @@
 
   vars_files:
     - _options.yaml
-    # - _secrets.yaml
     
   tasks:
     - name: Update APT cache
@@ -79,14 +78,9 @@
       shell:
         cmd: "sysctl -p"
 
-    # - name: Install Docker
-    #   shell: 
-    #     cmd: "curl -fsSL https://get.docker.com -o get-docker.sh && sudo sh get-docker.sh"
-    #     chdir: "/tmp"
-
-    # - name: Install docker-compose
-    #   shell:
-    #     cmd: |
-    #       curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-    #       chmod +x /usr/local/bin/docker-compose
+    - name: Install QR codes generator
+      apt:
+        name: qrencode
+        state: present
+        update_cache: true
     
