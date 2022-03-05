@@ -5,8 +5,9 @@
   become: yes
   become_user: root
 
-  # vars_files:
-  #   - secrets.yaml
+  vars_files:
+    - _options.yaml
+    # - _secrets.yaml
     
   tasks:
     - name: Update APT cache
