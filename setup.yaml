@@ -4,6 +4,9 @@
   gather_facts: false
   become: yes
   become_user: root
+
+  # vars_files:
+  #   - secrets.yaml
     
   tasks:
     - name: Update APT cache
@@ -15,7 +18,13 @@
         name: wireguard
         state: present
 
-    - name: Generate the server keypair
+    - name: Check if private key already exists
+      stat: 
+        path: /etc/wireguard/privatekey
+      register: private_key_stats
+
+    - name: Generate the server keypair if not exists
+      when: private_key_stats.stat.exists == False
       shell:
         cmd: "wg genkey | tee /etc/wireguard/privatekey | wg pubkey | tee /etc/wireguard/publickey"
 
@@ -43,6 +52,11 @@
         src: "templates/wg0.conf.j2"
         dest: "/etc/wireguard/wg0.conf"
         mode: 0600
+        force: true
+
+    - name: Down interface
+      shell: "wg-quick down wg0"
+      ignore_errors: true
 
     - name: Up interface
       shell: "wg-quick up wg0"
@@ -51,8 +65,8 @@
       shell: "wg show wg0"
       register: wg_wg0_state
     
-    - debug: 
-        var: wg_wg0_state.stdout_lines
+    # - debug: 
+    #     var: wg_wg0_state.stdout_lines
 
     - name: Enabling systemd unit
       shell: "sudo systemctl enable wg-quick@wg0"
